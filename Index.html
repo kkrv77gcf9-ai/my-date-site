@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A little question for you 💌</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose:      #e8607a;
+    --rose-soft: #f2a0b0;
+    --blush:     #fde8ed;
+    --cream:     #fff8f9;
+    --petal:     #fad4dc;
+    --text:      #5a2a35;
+    --text-soft: #a06070;
+    --white:     #ffffff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; min-height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ─── BACKGROUND PATTERN ──────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 15%, #fce4eb55 0%, transparent 60%),
+      radial-gradient(ellipse 60% 70% at 90% 85%, #fad0da44 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, #fff0f3 0%, var(--cream) 100%);
+    pointer-events: none;
+  }
+
+  /* ─── FLOATING HEARTS CANVAS ──────────────────────── */
+  #hcanvas {
+    position: fixed; inset: 0; z-index: 1;
+    pointer-events: none;
+    width: 100%; height: 100%;
+  }
+
+  /* ─── PAGE WRAPPER ────────────────────────────────── */
+  .scene {
+    position: relative; z-index: 2;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.25rem;
+  }
+
+  /* ─── PAGE TRANSITIONS ────────────────────────────── */
+  .page {
+    display: none;
+    width: 100%;
+    max-width: 520px;
+    animation: pageIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .page.active { display: block; }
+
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(28px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ─── CARD ────────────────────────────────────────── */
+  .card {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(232,96,122,0.15);
+    border-radius: 28px;
+    padding: 2.8rem 2.4rem 2.4rem;
+    box-shadow:
+      0 2px 0 rgba(255,255,255,0.9) inset,
+      0 24px 64px rgba(220,80,110,0.10),
+      0 4px 16px rgba(220,80,110,0.06);
+    text-align: center;
+  }
+
+  /* ─── TYPOGRAPHY ──────────────────────────────────── */
+  .display {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    line-height: 1.25;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+  .display em { font-style: italic; color: var(--rose); }
+
+  .caption {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: var(--text-soft);
+    letter-spacing: 0.06em;
+    margin-bottom: 2rem;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rose-soft);
+    background: rgba(232,96,122,0.08);
+    border: 1px solid rgba(232,96,122,0.18);
+    border-radius: 50px;
+    padding: 0.3rem 0.9rem;
+    margin-bottom: 1.4rem;
+  }
+
+  /* ─── BUTTONS ─────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.18s, box-shadow 0.18s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #f07088, #d94060);
+    color: #fff;
+    box-shadow: 0 6px 22px rgba(217,64,96,0.32);
+  }
+  .btn-primary:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 28px rgba(217,64,96,0.42); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    background: rgba(255,255,255,0.9);
+    color: var(--rose);
+    border: 1.5px solid rgba(232,96,122,0.35);
+    box-shadow: 0 2px 10px rgba(220,80,110,0.08);
+  }
+  .btn-ghost:hover { background: #fff; border-color: var(--rose-soft); }
+
+  .btn-soft {
+    background: linear-gradient(135deg, #fad4dc, #f5b3c0);
+    color: var(--text);
+    box-shadow: 0 4px 16px rgba(220,80,110,0.14);
+  }
+  .btn-soft:hover { transform: translateY(-2px); }
+
+  /* NO button — fixed position, teleports away */
+  #btnNo {
+    position: fixed;
+    z-index: 100;
+    cursor: pointer;
+  }
+
+  /* ─── BUTTON ROW ──────────────────────────────────── */
+  .btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4rem;
+    margin-top: 1.8rem;
+    flex-wrap: wrap;
+  }
+
+  /* ─── DECORATIVE IMAGES ──────────────────────────── */
+  .deco-wrap {
+    position: fixed; z-index: 2;
+    pointer-events: none;
+    user-select: none;
+  }
+  .deco-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  #deco-pancake {
+    bottom: 4%;
+    left: 2%;
+    width: clamp(100px, 16vw, 160px);
+    animation: floatA 5s ease-in-out infinite;
+  }
+  #deco-bouquet {
+    bottom: 4%;
+    right: 2%;
+    width: clamp(90px, 14vw, 140px);
+    animation: floatB 5.5s ease-in-out infinite;
+  }
+
+  @keyframes floatA {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-10px) rotate(-1deg); }
+  }
+  @keyframes floatB {
+    0%,100% { transform: translateY(0) rotate(3deg); }
+    50%      { transform: translateY(-8px) rotate(1deg); }
+  }
+
+  /* ─── DIVIDER ─────────────────────────────────────── */
+  .divider {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin: 1.4rem 0;
+    color: var(--petal);
+    font-size: 0.75rem;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--petal));
+  }
+  .divider::after { background: linear-gradient(90deg, var(--petal), transparent); }
+
+  /* ─── PLAN CARDS (Page 3) ─────────────────────────── */
+  .plan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.6rem;
+  }
+  @media (max-width: 480px) {
+    .plan-grid { grid-template-columns: 1fr; }
+  }
+
+  .plan-card {
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(232,96,122,0.18);
+    border-radius: 20px;
+    padding: 1.4rem 1.2rem 1.2rem;
+    text-align: left;
+    box-shadow: 0 4px 18px rgba(220,80,110,0.07);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .plan-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(220,80,110,0.13); }
+
+  .plan-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 0.5rem;
+  }
+  .plan-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+  .plan-desc {
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .plan-details {
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--petal);
+    font-size: 0.8rem;
+    color: var(--text-soft);
+    line-height: 1.7;
+    font-weight: 300;
+    display: none;
+  }
+  .plan-details.open { display: block; animation: fadeSlide 0.35s ease both; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .detail-row {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    margin-bottom: 0.35rem;
+  }
+  .detail-row span:first-child { flex-shrink: 0; font-size: 0.95rem; margin-top: 1px; }
+
+  .plan-toggle {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--rose);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: underline;
+    text-decoration-color: rgba(232,96,122,0.3);
+    text-underline-offset: 3px;
+  }
+  .plan-toggle:hover { color: #c03050; }
+
+  /* ─── EMOJI BADGE ─────────────────────────────────── */
+  .emoji-badge {
+    font-size: 3rem;
+    margin-bottom: 0.9rem;
+    display: block;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  /* ─── SPARKLE ROW ─────────────────────────────────── */
+  .sparkle-row {
+    display: flex; justify-content: center; gap: 0.35rem;
+    font-size: 1rem; margin: 1rem 0 0.3rem;
+    animation: fadeIn 0.8s 0.3s both;
+    color: var(--rose-soft);
+    letter-spacing: 0.1em;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* mobile adjustments */
+  @media (max-width: 420px) {
+    .card { padding: 2rem 1.4rem 1.8rem; }
+    .display { font-size: 1.65rem; }
+    #deco-pancake, #deco-bouquet { width: clamp(70px, 18vw, 110px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating hearts -->
+<canvas id="hcanvas"></canvas>
+
+<!-- Decorative emoji images -->
+<div class="deco-wrap" id="deco-pancake">
+  <!-- Pancake with pineapple — SVG illustration -->
+  <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- plate -->
+    <ellipse cx="80" cy="155" rx="65" ry="14" fill="#f5c8d8" opacity="0.4"/>
+    <!-- pancake stack -->
+    <ellipse cx="80" cy="140" rx="55" ry="11" fill="#f9d38a"/>
+    <rect x="25" y="118" width="110" height="24" rx="10" fill="#f9d38a"/>
+    <ellipse cx="80" cy="118" rx="55" ry="11" fill="#f0c070"/>
+    <rect x="28" y="96" width="104" height="24" rx="10" fill="#f0c070"/>
+    <ellipse cx="80" cy="96" rx="52" ry="10" fill="#e8b050"/>
+    <rect x="30" y="76" width="100" height="22" rx="10" fill="#e8b050"/>
+    <ellipse cx="80" cy="76" rx="50" ry="10" fill="#dda040"/>
+    <!-- honey drip -->
+    <path d="M58 76 Q55 90 53 100" stroke="#f0c040" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M100 76 Q102 88 104 98" stroke="#f0c040" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- pineapple on top -->
+    <!-- body -->
+    <ellipse cx="80" cy="52" rx="18" ry="22" fill="#f5c030"/>
+    <!-- diamond pattern -->
+    <line x1="62" y1="46" x2="98" y2="46" stroke="#d4a020" stroke-width="1.2"/>
+    <line x1="62" y1="52" x2="98" y2="52" stroke="#d4a020" stroke-width="1.2"/>
+    <line x1="62" y1="58" x2="98" y2="58" stroke="#d4a020" stroke-width="1.2"/>
+    <line x1="72" y1="30" x2="72" y2="74" stroke="#d4a020" stroke-width="1.2"/>
+    <line x1="80" y1="30" x2="80" y2="74" stroke="#d4a020" stroke-width="1.2"/>
+    <line x1="88" y1="30" x2="88" y2="74" stroke="#d4a020" stroke-width="1.2"/>
+    <!-- leaves -->
+    <path d="M80 30 Q74 18 70 10" stroke="#5aaa40" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M80 30 Q80 16 80 8"  stroke="#4a9a30" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M80 30 Q86 18 90 10" stroke="#5aaa40" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M80 30 Q70 22 64 16" stroke="#6aba50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M80 30 Q90 22 96 16" stroke="#6aba50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+
+<div class="deco-wrap" id="deco-bouquet">
+  <!-- Strawberry chocolate flower bouquet — SVG illustration -->
+  <svg viewBox="0 0 140 190" xmlns="http://www.w3.org/2000/svg">
+    <!-- wrapper paper -->
+    <path d="M70 175 L20 100 Q35 85 70 95 Q105 85 120 100 Z" fill="#fce4ed" stroke="#f2b0c0" stroke-width="1.5"/>
+    <path d="M70 175 L20 100 Q42 108 70 140 Z" fill="#f9d0de" opacity="0.6"/>
+    <!-- stems -->
+    <line x1="70" y1="95" x2="70" y2="50" stroke="#7ac050" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="55" y1="92" x2="48" y2="48" stroke="#7ac050" stroke-width="2" stroke-linecap="round"/>
+    <line x1="85" y1="92" x2="92" y2="48" stroke="#7ac050" stroke-width="2" stroke-linecap="round"/>
+    <line x1="62" y1="93" x2="56" y2="55" stroke="#8acc60" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="78" y1="93" x2="84" y2="55" stroke="#8acc60" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- leaves -->
+    <path d="M70 75 Q60 68 56 60" stroke="#6ab040" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M70 75 Q80 68 84 60" stroke="#6ab040" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- chocolate strawberry 1 (center) -->
+    <path d="M70 28 Q62 20 62 12 Q62 4 70 2 Q78 4 78 12 Q78 20 70 28Z" fill="#c05030"/>
+    <ellipse cx="70" cy="10" rx="8" ry="8.5" fill="#d06040"/>
+    <line x1="70" y1="2" x2="70" y2="28" stroke="#a03020" stroke-width="0.8"/>
+    <line x1="62" y1="10" x2="78" y2="10" stroke="#a03020" stroke-width="0.8"/>
+    <!-- dots on choc strawberry 1 -->
+    <circle cx="66" cy="8"  r="1.2" fill="#802010"/>
+    <circle cx="74" cy="8"  r="1.2" fill="#802010"/>
+    <circle cx="68" cy="15" r="1.2" fill="#802010"/>
+    <circle cx="72" cy="20" r="1"   fill="#802010"/>
+    <!-- leaf top -->
+    <path d="M70 2 Q66 -4 62 -2" stroke="#5aaa30" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M70 2 Q70 -5 70 -6"  stroke="#4a9a28" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M70 2 Q74 -4 78 -2" stroke="#5aaa30" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <!-- flower left (pink) -->
+    <circle cx="48" cy="40" r="10" fill="#f9b0c8"/>
+    <circle cx="48" cy="40" r="5.5" fill="#fff0f5"/>
+    <circle cx="48" cy="33" r="4.5" fill="#f490b0"/>
+    <circle cx="48" cy="47" r="4.5" fill="#f490b0"/>
+    <circle cx="41" cy="40" r="4.5" fill="#f490b0"/>
+    <circle cx="55" cy="40" r="4.5" fill="#f490b0"/>
+    <circle cx="43" cy="35" r="3.8" fill="#f9b0c8"/>
+    <circle cx="53" cy="35" r="3.8" fill="#f9b0c8"/>
+    <circle cx="43" cy="45" r="3.8" fill="#f9b0c8"/>
+    <circle cx="53" cy="45" r="3.8" fill="#f9b0c8"/>
+    <circle cx="48" cy="40" r="4" fill="#f5d030"/>
+    <!-- flower right (pink) -->
+    <circle cx="92" cy="40" r="10" fill="#f9b0c8"/>
+    <circle cx="92" cy="40" r="5.5" fill="#fff0f5"/>
+    <circle cx="92" cy="33" r="4.5" fill="#f490b0"/>
+    <circle cx="92" cy="47" r="4.5" fill="#f490b0"/>
+    <circle cx="85" cy="40" r="4.5" fill="#f490b0"/>
+    <circle cx="99" cy="40" r="4.5" fill="#f490b0"/>
+    <circle cx="87" cy="35" r="3.8" fill="#f9b0c8"/>
+    <circle cx="97" cy="35" r="3.8" fill="#f9b0c8"/>
+    <circle cx="87" cy="45" r="3.8" fill="#f9b0c8"/>
+    <circle cx="97" cy="45" r="3.8" fill="#f9b0c8"/>
+    <circle cx="92" cy="40" r="4" fill="#f5d030"/>
+    <!-- chocolate strawberry 2 (left mid) -->
+    <path d="M56 52 Q50 44 50 37 Q50 30 56 28 Q63 30 63 37 Q63 44 56 52Z" fill="#b04828"/>
+    <ellipse cx="56" cy="37" rx="6.5" ry="7" fill="#c05838"/>
+    <circle cx="53" cy="35" r="1" fill="#702010"/>
+    <circle cx="59" cy="35" r="1" fill="#702010"/>
+    <circle cx="55" cy="41" r="1" fill="#702010"/>
+    <path d="M56 28 Q53 23 50 25" stroke="#4a9a28" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M56 28 Q56 22 56 21" stroke="#3a8a20" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M56 28 Q59 23 62 25" stroke="#4a9a28" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- chocolate strawberry 3 (right mid) -->
+    <path d="M84 52 Q78 44 78 37 Q78 30 84 28 Q91 30 91 37 Q91 44 84 52Z" fill="#b04828"/>
+    <ellipse cx="84" cy="37" rx="6.5" ry="7" fill="#c05838"/>
+    <circle cx="81" cy="35" r="1" fill="#702010"/>
+    <circle cx="87" cy="35" r="1" fill="#702010"/>
+    <circle cx="83" cy="41" r="1" fill="#702010"/>
+    <path d="M84 28 Q81 23 78 25" stroke="#4a9a28" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M84 28 Q84 22 84 21" stroke="#3a8a20" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M84 28 Q87 23 90 25" stroke="#4a9a28" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- ribbon -->
+    <path d="M35 105 Q70 115 105 105" stroke="#f07090" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="70" cy="117" r="5" fill="#f07090"/>
+    <path d="M70 117 Q62 110 58 104" stroke="#f07090" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M70 117 Q78 110 82 104" stroke="#f07090" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+
+<!-- ─── PAGES ─────────────────────────────────────────── -->
+<div class="scene">
+
+  <!-- PAGE 1 -->
+  <div class="page active" id="page1">
+    <div class="card">
+      <span class="tag">✦ a little question ✦</span>
+      <span class="emoji-badge">💌</span>
+      <h1 class="display">Will you go on a<br><em>date with me?</em></h1>
+      <div class="divider">♥</div>
+      <p class="caption">take your time deciding… or don't 🥺</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btnYes" onclick="goTo('page2')">Yes ❤️</button>
+        <button class="btn btn-ghost"   id="btnNo">No 🤍</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page" id="page2">
+    <div class="card">
+      <span class="emoji-badge" style="animation-delay:0.1s">😳</span>
+      <h1 class="display">Wait you actually<br><em>said yess ??</em></h1>
+      <p class="caption" style="margin-top:0.6rem">omg omg omg I can't believe it</p>
+      <div class="sparkle-row">✨ 💕 ✨ 💕 ✨</div>
+      <div class="btn-row" style="margin-top:1.4rem">
+        <button class="btn btn-soft" onclick="goTo('page3')">Okey okey 🫶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3 -->
+  <div class="page" id="page3">
+    <div class="card">
+      <span class="tag">✦ our date ✦</span>
+      <span class="emoji-badge" style="font-size:2.2rem; animation-delay:0.05s">🗓️ 💑</span>
+      <h1 class="display" style="font-size:clamp(1.5rem,4vw,2rem)">Choose our <em>date plan</em></h1>
+      <div class="divider">♥</div>
+
+      <div class="plan-grid">
+
+        <!-- Plan A -->
+        <div class="plan-card">
+          <div class="plan-label">✦ Plan A</div>
+          <div class="plan-title">Home visit &amp; Algiers dinner 🌆</div>
+          <div class="plan-desc">
+            I'll come to you first, then a halal evening out in Algiers.
+          </div>
+
+          <div class="plan-details" id="detailsA">
+            <div class="detail-row">
+              <span>🍽️</span>
+              <span><strong>Restaurant Poisson Or</strong>, Algiers</span>
+            </div>
+            <div class="detail-row">
+              <span>📅</span>
+              <span>20 June 2026 at 16:00</span>
+            </div>
+            <div class="detail-row">
+              <span>🚗</span>
+              <span>We go by car, I'll drive us</span>
+            </div>
+            <div class="detail-row">
+              <span>🌙</span>
+              <span>Halal &amp; cosy vibes all evening</span>
+            </div>
+          </div>
+
+          <button class="plan-toggle" id="toggleA" onclick="toggleDetails('A')">
+            See full details ↓
+          </button>
+        </div>
+
+        <!-- Plan B -->
+        <div class="plan-card">
+          <div class="plan-label">✦ Plan B</div>
+          <div class="plan-title">Casual date in Médéa 🌿</div>
+          <div class="plan-desc">
+            A relaxed afternoon lunch in Médéa — simple, sweet, and just us.
+          </div>
+
+          <div class="plan-details open" id="detailsB">
+            <div class="detail-row">
+              <span>🍽️</span>
+              <span><strong>Baraka Restaurant</strong>, Médéa</span>
+            </div>
+            <div class="detail-row">
+              <span>📅</span>
+              <span>20 June 2026 at 12:00</span>
+            </div>
+            <div class="detail-row">
+              <span>🌿</span>
+              <span>Chill, no-fuss, just good food &amp; good company</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /plan-grid -->
+
+      <div class="sparkle-row" style="margin-top:1.6rem">💕 ✨ 💕 ✨ 💕</div>
+    </div>
+  </div>
+
+</div><!-- /scene -->
+
+<script>
+/* ─── FLOATING HEARTS ─────────────────────────────────── */
+const canvas = document.getElementById('hcanvas');
+const ctx    = canvas.getContext('2d');
+
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const SYMBOLS = ['♥','♡','❤','💕'];
+const hearts  = [];
+
+class Heart {
+  constructor(startRandom) {
+    this.reset(startRandom);
+  }
+  reset(startRandom) {
+    this.x      = Math.random() * canvas.width;
+    this.y      = startRandom ? Math.random() * canvas.height : canvas.height + 20;
+    this.size   = 11 + Math.random() * 14;
+    this.vy     = 0.4 + Math.random() * 0.8;
+    this.alpha  = 0.12 + Math.random() * 0.22;
+    this.sway   = Math.random() * Math.PI * 2;
+    this.swaySpd= 0.012 + Math.random() * 0.015;
+    this.symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+    this.hue    = 340 + Math.random() * 20;
+  }
+  tick() {
+    this.y    -= this.vy;
+    this.sway += this.swaySpd;
+    this.x    += Math.sin(this.sway) * 0.5;
+    if (this.y < -30) this.reset(false);
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle   = `hsl(${this.hue},80%,65%)`;
+    ctx.font        = `${this.size}px serif`;
+    ctx.fillText(this.symbol, this.x, this.y);
+    ctx.restore();
+  }
+}
+
+// Only 10 hearts — subtle
+for (let i = 0; i < 10; i++) hearts.push(new Heart(true));
+
+(function loop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hearts.forEach(h => { h.tick(); h.draw(); });
+  requestAnimationFrame(loop);
+})();
+
+/* ─── PAGE TRANSITIONS ────────────────────────────────── */
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.animation = 'none';
+  });
+  const pg = document.getElementById(id);
+  pg.classList.add('active');
+  void pg.offsetWidth;
+  pg.style.animation = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ─── RUNAWAY "NO" BUTTON ─────────────────────────────── */
+const btnNo  = document.getElementById('btnNo');
+const btnYes = document.getElementById('btnYes');
+let noX = 0, noY = 0, ready = false;
+
+function placeNo() {
+  const r = btnYes.getBoundingClientRect();
+  // Start next to Yes button
+  noX = r.right + 20;
+  noY = r.top;
+  clampAndApply();
+  ready = true;
+}
+
+setTimeout(placeNo, 400);
+window.addEventListener('resize', () => { if (ready) placeNo(); });
+
+function clampAndApply() {
+  const w = btnNo.offsetWidth  || 110;
+  const h = btnNo.offsetHeight || 44;
+  noX = Math.max(8, Math.min(window.innerWidth  - w - 8, noX));
+  noY = Math.max(8, Math.min(window.innerHeight - h - 8, noY));
+  btnNo.style.left = noX + 'px';
+  btnNo.style.top  = noY + 'px';
+}
+
+function flee(cx, cy) {
+  if (!ready) return;
+  const r    = btnNo.getBoundingClientRect();
+  const bx   = r.left + r.width  / 2;
+  const by   = r.top  + r.height / 2;
+  const dist = Math.hypot(cx - bx, cy - by);
+  const threshold = 120;
+  if (dist < threshold) {
+    const angle = Math.atan2(by - cy, bx - cx);
+    const push  = threshold + 100;
+    noX += Math.cos(angle) * push;
+    noY += Math.sin(angle) * push;
+    clampAndApply();
+  }
+}
+
+document.addEventListener('mousemove', e => flee(e.clientX, e.clientY));
+document.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  flee(t.clientX, t.clientY);
+}, { passive: true });
+
+// Prevent accidental click (belt and suspenders)
+btnNo.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); });
+
+/* ─── PLAN DETAILS TOGGLE ─────────────────────────────── */
+function toggleDetails(plan) {
+  const details = document.getElementById('details' + plan);
+  const toggle  = document.getElementById('toggle'  + plan);
+  const isOpen  = details.classList.toggle('open');
+  toggle.textContent = isOpen ? 'Hide details ↑' : 'See full details ↓';
+}
+</script>
+</body>
+</html>
